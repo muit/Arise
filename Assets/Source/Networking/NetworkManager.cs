@@ -17,12 +17,6 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         Debug.Log("Starting...");
-
-        //Destroy(FindObjectOfType<MovementController>().gameObject);
-
-        //BoltLauncher.StartServer(UdpKit.UdpEndPoint.Parse("127.0.0.1:25002"));
-        //BoltNetwork.LoadScene("lobby");
-        //BoltLauncher.Shutdown();
     }
 
     public static void Connect(string url)
@@ -77,6 +71,8 @@ public class NetworkManager : MonoBehaviour
     //GAMEPLAY
     private void SpawnPlayer() {
         Debug.Log("Spawn");
-        TNManager.Create(Game.Get().onlinePlayer, Game.Get().playerSpawn.position, Game.Get().playerSpawn.rotation);
+        TNManager.Create(Game.Get().onlinePlayer, 
+                         Game.Get().activeSpawn.transform.position, 
+                         Game.Get().activeSpawn.transform.rotation);
     }
 }

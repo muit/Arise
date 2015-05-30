@@ -13,4 +13,7 @@ public class Entity : TNBehaviour  {
     public bool IsAlive(){
         return live > 0;
     }
+
+
+    public bool IsPlayer() { return false; }
 }

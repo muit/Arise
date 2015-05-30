@@ -30,6 +30,6 @@ public class TNAutoCreate : MonoBehaviour
 	{
 		while (TNManager.isJoiningChannel) yield return null;
 		TNManager.Create(prefab, transform.position, transform.rotation, persistent);
-		//Destroy(gameObject);
+		Destroy(gameObject);
 	}
 }

@@ -16,7 +16,7 @@ public class CameraMovement : MonoBehaviour {
     public MotionBlur motionBlur;
 
     void Start() {
-        spawn = Game.Get().playerSpawn;
+        spawn = Game.Get().activeSpawn.transform;
         motionBlur = GetComponent<MotionBlur>();
     }
 

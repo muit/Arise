@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class Game : MonoBehaviour {
 
@@ -9,9 +9,10 @@ public class Game : MonoBehaviour {
 
     //References
     public Camera playerCamera;
-    public Transform playerSpawn;
     [System.NonSerialized]
     public CPlayer controlledPlayer;
+    public Spawn activeSpawn;
+    public List<Spawn> spawns;
 
 
     void Awake()
@@ -38,6 +39,14 @@ public class Game : MonoBehaviour {
 
     void Start() {
         StartGame();
+        spawns = new List<Spawn>(FindObjectsOfType<Spawn>());
+
+        //Set Default spawn if neccesary
+        if (!activeSpawn)
+        {
+            activeSpawn = spawns[0];
+        }
+        activeSpawn.SetActiveSpawn();
     }
 
     void Update() {

@@ -69,14 +69,14 @@ public class CPlayer : Entity
         if(tno && tno.isMine)
             tno.Send(1, TNet.Target.OthersSaved);
 
-        transform.position = Game.Get().playerSpawn.position;
-        transform.rotation = Game.Get().playerSpawn.rotation;
+        transform.position = Game.Get().activeSpawn.transform.position;
+        transform.rotation = Game.Get().activeSpawn.transform.rotation;
         rigidbody.velocity = Vector3.zero;
         rigidbody.angularVelocity = Vector3.zero;
         live = maxLive;
         money = 0;
 
-        Game.Get().playerSpawn.GetComponent<AudioSource>().Play();
+        Game.Get().activeSpawn.GetComponent<AudioSource>().Play();
     }
 
 
@@ -165,7 +165,7 @@ public class CPlayer : Entity
     }
 
     public bool CanMove() {
-        return !(IsColliding() && !canJumpAgain && rigidbody.velocity.y < 0.01);
+        return !(IsColliding() && !canJumpAgain);
     }
 
     void OnCollisionEnter(Collision col) {
@@ -177,4 +177,8 @@ public class CPlayer : Entity
         if(collidersAmount > 0)
             collidersAmount -= 1;
     }
+
+
+
+    public bool IsPlayer() { return true; }
 }
