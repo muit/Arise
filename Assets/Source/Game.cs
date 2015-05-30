@@ -10,11 +10,11 @@ public class Game : MonoBehaviour {
     //References
     public Camera playerCamera;
     public Transform playerSpawn;
+    public CPlayer controlledPlayer;
 
 
     void Awake()
     {
-        DontDestroyOnLoad(gameObject);
     }
 
     public enum GameState {
@@ -72,5 +72,10 @@ public class Game : MonoBehaviour {
             TNManager.Disconnect();
         else
             Application.LoadLevel("menu");
+    }
+
+    public static bool IsMobile(){
+        return (Application.platform == RuntimePlatform.Android
+             || Application.platform == RuntimePlatform.IPhonePlayer);
     }
 }

@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using InControl;
 
 public class GUIManager : MonoBehaviour
 {
     private static GUIManager gui;
+    //private static MobileControlRig mobileControl;
 
     public static GUIManager Get()
     {
@@ -23,6 +25,12 @@ public class GUIManager : MonoBehaviour
 	void Start () {
         //Get Uis
         transform.GetComponentsInChildren<Canvas>(uis);
+
+        if (!Game.IsMobile())
+        {
+            TouchManager  touch = FindObjectOfType<TouchManager>();
+            touch.gameObject.SetActive(false);
+        }
 	}
 	
 	void Update () {

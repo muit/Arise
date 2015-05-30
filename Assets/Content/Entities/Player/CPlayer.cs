@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using TNet;
 using System.Collections;
+using InControl;
 
 public class CPlayer : Entity
 {
@@ -22,6 +23,10 @@ public class CPlayer : Entity
         canvas = GetComponentInChildren<HPBar>();
         rigidbody = GetComponent<Rigidbody>(); 
         camera = Game.Get().playerCamera.GetComponent<CameraMovement>();
+
+        //Set up controlled player reference
+        if (tno.isMine)
+            Game.Get().controlledPlayer = this;
 	}
 	
 	void Update () {
@@ -95,9 +100,19 @@ public class CPlayer : Entity
             camera.SetTarget(this);
 
         // Cache the inputs.
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-
+        float h = 0f;
+        float v = 0f;
+        bool jump = false;
+        if(Game.IsMobile()){
+            InputDevice activeDevice = InputManager.ActiveDevice;
+            h = activeDevice.LeftStickX;
+            v = activeDevice.LeftStickY;
+            jump = activeDevice.Action1.WasPressed;
+        }else{
+            h = Input.GetAxis("Horizontal");
+            v = Input.GetAxis("Vertical");
+            jump = Input.GetKeyDown("space");
+        }
 
         if (h != 0f || v != 0f)
         {
@@ -113,7 +128,7 @@ public class CPlayer : Entity
         }
 
         //Jump
-        if (Input.GetKeyDown("space") && canJumpAgain)
+        if (jump && canJumpAgain)
         {
             isMoving = true;
             rigidbody.AddForce(0, jumpSpeed, 0);
