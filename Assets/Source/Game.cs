@@ -10,6 +10,7 @@ public class Game : MonoBehaviour {
     //References
     public Camera playerCamera;
     public Transform playerSpawn;
+    [System.NonSerialized]
     public CPlayer controlledPlayer;
 
 

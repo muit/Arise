@@ -72,8 +72,11 @@ public class CPlayer : Entity
         transform.position = Game.Get().playerSpawn.position;
         transform.rotation = Game.Get().playerSpawn.rotation;
         rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
         live = maxLive;
         money = 0;
+
+        Game.Get().playerSpawn.GetComponent<AudioSource>().Play();
     }
 
 
@@ -93,6 +96,10 @@ public class CPlayer : Entity
 
     private Rigidbody rigidbody;
     private CameraMovement camera;
+    
+    //Audio
+    [SerializeField]
+    private AudioSource jumpSound;
 
     private void MovementUpdate()
     {
@@ -103,6 +110,7 @@ public class CPlayer : Entity
         float h = 0f;
         float v = 0f;
         bool jump = false;
+        //Detect Correct Input
         if(Game.IsMobile()){
             InputDevice activeDevice = InputManager.ActiveDevice;
             h = activeDevice.LeftStickX;
@@ -114,7 +122,7 @@ public class CPlayer : Entity
             jump = Input.GetKeyDown("space");
         }
 
-        if (h != 0f || v != 0f)
+        if (CanMove() && (h != 0f || v != 0f))
         {
             isMoving = true;
             Rotating(h, v);
@@ -130,12 +138,13 @@ public class CPlayer : Entity
         //Jump
         if (jump && canJumpAgain)
         {
+            jumpSound.Play();
             isMoving = true;
             rigidbody.AddForce(0, jumpSpeed, 0);
         }
 
         //Enable or disable motionBlur
-        camera.motionBlur.enabled = (Vector3.Distance(rigidbody.velocity, Vector3.zero) > 25);
+        camera.motionBlur.enabled = rigidbody.velocity.sqrMagnitude > 25*25;
     }
 
     void Rotating(float horizontal, float vertical)
@@ -145,5 +154,27 @@ public class CPlayer : Entity
         Quaternion newRotation = Quaternion.Lerp(rigidbody.rotation, targetRotation, turnSmoothing * Time.deltaTime);
 
         rigidbody.MoveRotation(newRotation);
+    }
+
+
+    //Fix Wall Stuck
+    private int collidersAmount = 0;
+
+    public bool IsColliding(){
+        return collidersAmount > 0;
+    }
+
+    public bool CanMove() {
+        return !(IsColliding() && !canJumpAgain && rigidbody.velocity.y < 0.01);
+    }
+
+    void OnCollisionEnter(Collision col) {
+        collidersAmount += 1;
+    }
+
+    void OnCollisionExit(Collision col)
+    {
+        if(collidersAmount > 0)
+            collidersAmount -= 1;
     }
 }
