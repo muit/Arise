@@ -13,7 +13,9 @@ public class Spawn : MonoBehaviour {
         particles = GetComponentInChildren<ParticleSystem>();
 	}
 
-    void Start() {
+    IEnumerator Start()
+    {
+        while (TNManager.isJoiningChannel) yield return null;
         if (active)
         {
             TNManager.Create(Game.Get().onlinePlayer, transform.position, transform.rotation, persistent);

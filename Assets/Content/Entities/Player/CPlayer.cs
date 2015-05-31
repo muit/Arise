@@ -26,7 +26,12 @@ public class CPlayer : Entity
 
         //Set up controlled player reference
         if (tno.isMine)
+        {
             Game.Get().controlledPlayer = this;
+        }
+        else {
+            GetComponent<AudioListener>().enabled = false;
+        }
 	}
 	
 	void Update () {

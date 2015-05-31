@@ -32,26 +32,29 @@ public class PlayerSyncRigidbody : TNBehaviour
 
 	public bool isImportant = false;
 
+    public float movementSmooth = 20.0f;
+
 	/// <summary>
 	/// Set this to 'false' to stop sending updates.
 	/// </summary>
 
 	[System.NonSerialized] public bool isActive = true;
 
-	Transform mTrans;
-	Rigidbody mRb;
+	Rigidbody mRb; 
 	float mNext = 0f;
 	bool mWasSleeping = false;
 
-	Vector3 mLastPos;
-	Vector3 mLastRot;
+	Vector3 lastPosition;
+	Quaternion lastRotation;
+
+    Vector3 nextPosition;
+    Quaternion nextRotation;
 
     protected virtual void Awake()
 	{
-		mTrans = transform;
 		mRb = GetComponent<Rigidbody>();
-		mLastPos = mTrans.position;
-		mLastRot = mTrans.rotation.eulerAngles;
+		lastPosition = mRb.position;
+		lastRotation = mRb.rotation;
 		UpdateInterval();
 	}
 
@@ -66,46 +69,58 @@ public class PlayerSyncRigidbody : TNBehaviour
 	/// </summary>
 
 	protected virtual void FixedUpdate ()
-	{
+    {
 		if (updatesPerSecond < 0.001f) return;
 
-		if (isActive && tno.isMine && TNManager.isInChannel)
+		if (isActive && TNManager.isInChannel)
 		{
-			bool isSleeping = mRb.IsSleeping();
-			if (isSleeping && mWasSleeping) return;
+            if (tno.isMine)
+            {
+                if (mRb.isKinematic) mRb.isKinematic = false;
 
-			mNext -= Time.deltaTime;
-			if (mNext > 0f) return;
-			UpdateInterval();
+                bool isSleeping = mRb.IsSleeping();
+                if (isSleeping && mWasSleeping) return;
 
-			Vector3 pos = mTrans.position;
-			Vector3 rot = mTrans.rotation.eulerAngles;
+                mNext -= Time.deltaTime;
+                if (mNext > 0f) return;
+                UpdateInterval();
 
-			if (mWasSleeping || pos != mLastPos || rot != mLastRot)
-			{
-				mLastPos = pos;
-				mLastRot = rot;
+                Vector3 pos = mRb.position;
+                Quaternion rot = mRb.rotation;
 
-				// Send the update. Note that we're using an RFC ID here instead of the function name.
-				// Using an ID speeds up the function lookup time and reduces the size of the packet.
-				// Since the target is "OthersSaved", even players that join later will receive this update.
-				// Each consecutive Send() updates the previous, so only the latest one is kept on the server.
+                if (mWasSleeping || Vector3.Distance(pos, lastPosition) > 0.1f || Quaternion.Angle(rot, lastRotation) > 5f)
+                {
+                    lastPosition = pos;
+                    lastRotation = rot;
 
-				if (isImportant)
-				{
-					tno.Send(255, Target.OthersSaved, pos, rot, mRb.velocity, mRb.angularVelocity);
-				}
-				else tno.SendQuickly(255, Target.OthersSaved, pos, rot, mRb.velocity, mRb.angularVelocity);
-			}
-			mWasSleeping = isSleeping;
+                    // Send the update. Note that we're using an RFC ID here instead of the function name.
+                    // Using an ID speeds up the function lookup time and reduces the size of the packet.
+                    // Since the target is "OthersSaved", even players that join later will receive this update.
+                    // Each consecutive Send() updates the previous, so only the latest one is kept on the server.
+
+                    if (isImportant)
+                    {
+                        tno.Send(255, Target.OthersSaved, pos, rot, mRb.velocity, mRb.angularVelocity);
+                    }
+                    else tno.SendQuickly(255, Target.OthersSaved, pos, rot, mRb.velocity, mRb.angularVelocity);
+                }
+                mWasSleeping = isSleeping;
+            }
+            else {
+                if (!mRb.isKinematic) mRb.isKinematic = true;
+
+                if (nextPosition != Vector3.zero) {
+                    mRb.position = Vector3.Lerp(mRb.position, nextPosition, Time.deltaTime * movementSmooth);
+                }
+                if (nextRotation != Quaternion.identity) {
+                    mRb.rotation = Quaternion.Lerp(mRb.rotation, nextRotation, Time.deltaTime * movementSmooth);
+                }
+            }
 		}
-
-		if (tno.isMine && IsMoving())
-			Sync ();
 	}
 
     bool IsMoving() {
-        return Vector3.Distance(mRb.velocity, Vector3.zero) > 0.1 && Vector3.Distance(mRb.angularVelocity, Vector3.zero) > 0.1;
+        return mRb.velocity.sqrMagnitude > 0.1f*0.1f && mRb.angularVelocity.sqrMagnitude > 0.1f*0.1f;
     }
 
 	/// <summary>
@@ -115,18 +130,19 @@ public class PlayerSyncRigidbody : TNBehaviour
 	/// </summary>
 
 	[RFC(255)]
-	void OnSync (Vector3 pos, Vector3 rot, Vector3 vel, Vector3 ang)
+	void OnSync (Vector3 pos, Quaternion rot, Vector3 vel, Vector3 ang)
 	{
-		mTrans.position = pos;
-		mTrans.rotation = Quaternion.Euler(rot);
+		nextPosition = pos;
+		nextRotation = rot;
 		//mRb.MovePosition(pos);
 		//mRb.MoveRotation(Quaternion.Euler(rot));
-
+        /*
 		if (!mRb.isKinematic)
 		{
 			mRb.velocity = vel;
 			mRb.angularVelocity = ang;
-		}
+		}*/
+
 		UpdateInterval();
 	}
 
@@ -146,9 +162,9 @@ public class PlayerSyncRigidbody : TNBehaviour
 		{
 			UpdateInterval();
 			mWasSleeping = false;
-			mLastPos = mTrans.position;
-			mLastRot = mTrans.rotation.eulerAngles;
-			tno.Send(255, Target.OthersSaved, mLastPos, mLastRot, mRb.velocity, mRb.angularVelocity);
+			lastPosition = transform.position;
+			lastRotation = transform.rotation;
+			tno.Send(255, Target.OthersSaved, lastPosition, lastRotation, mRb.velocity, mRb.angularVelocity);
 		}
 	}
 }
