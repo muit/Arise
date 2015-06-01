@@ -185,5 +185,5 @@ public class CPlayer : Entity
 
 
 
-    public bool IsPlayer() { return true; }
+    public override bool IsPlayer() { return true; }
 }

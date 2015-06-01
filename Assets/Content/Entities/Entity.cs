@@ -15,5 +15,5 @@ public class Entity : TNBehaviour  {
     }
 
 
-    public bool IsPlayer() { return false; }
+    public virtual bool IsPlayer() { return false; }
 }
