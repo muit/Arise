@@ -37,6 +37,12 @@ ehthumbs.db
 Thumbs.db
 
 # ============ #
+#   Packets    #
+# ============ #
+Assets/TNet/
+Assets/ProCore/
+
+# ============ #
 #     Logs     #
 # ============ #
 

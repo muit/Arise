@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine.Events;
 
 public class TutorialText : MonoBehaviour {
-
     public bool disableOnComplete = false;
     public float disableDelay = 2.0f;
     public string[] completeOnKeys;
@@ -21,7 +20,7 @@ public class TutorialText : MonoBehaviour {
             {
                 if (Input.GetKey(completeOnKeys[i]))
                 {
-                    StartCoroutine(Complete(disableDelay));
+                    StartCoroutine(Complete());
                     return;
                 }
             }
@@ -31,18 +30,18 @@ public class TutorialText : MonoBehaviour {
                 float value = Input.GetAxis(completeOnAxis[e]);
                 if (value > 0.1f || value < -0.1f)
                 {
-                    StartCoroutine(Complete(disableDelay));
+                    StartCoroutine(Complete());
                     return;
                 }
             }
         }
 	}
 
-    IEnumerator Complete(float delay)
+    IEnumerator Complete()
     {
         if (!completed)
             completed = true;
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(disableDelay);
 
         onComplete.Invoke();
         if (disableOnComplete)
